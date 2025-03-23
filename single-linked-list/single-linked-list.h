@@ -108,6 +108,7 @@ class SingleLinkedList {
         // Вызов этого оператора у итератора, не указывающего на существующий элемент списка,
         // приводит к неопределённому поведению
         [[nodiscard]] reference operator*() const noexcept {
+            assert(node_ != nullptr);
             return node_->value;
         }
 
@@ -115,6 +116,7 @@ class SingleLinkedList {
         // Вызов этого оператора у итератора, не указывающего на существующий элемент списка,
         // приводит к неопределённому поведению
         [[nodiscard]] pointer operator->() const noexcept {
+            assert(node_ != nullptr);
             return &(node_->value);
         }
 
@@ -146,13 +148,8 @@ public:
 
     // Обмен содержимого списков
     void swap(SingleLinkedList& other) noexcept {
-        auto temp = head_.next_node;
-        head_.next_node = other.head_.next_node;
-        other.head_.next_node = temp;
-
-        size_t size_temp = size_;
-        size_ = other.size_;
-        other.size_ = size_temp;
+        std::swap(head_.next_node, other.head_.next_node);
+        std::swap(size_, other.size_);
     }
 
     // Оператор присваивание
@@ -171,12 +168,7 @@ public:
 
     // Сообщает, пустой ли список
     [[nodiscard]] bool IsEmpty() const noexcept {
-        if (size_ == 0) {
-            return true;
-        }
-        else {
-            return false;
-        }
+        return size_ == 0;
     }
 
     // Метод добавление нового элемента в начало списка
@@ -282,6 +274,7 @@ public:
     //Возвращает итератор на вставленный элемент
     //Если при создании элемента будет выброшено исключение, список останется в прежнем состоянии
     Iterator InsertAfter(ConstIterator pos, const Type& value) {
+        assert(pos.node_ != nullptr);
         Node* new_node = new Node(value, pos.node_->next_node); // при выбросе ошибке список останется в прежнем состоянии т.к узел не создатся
         pos.node_->next_node = new_node; // связываем новый узел с предыдущим узлом
         ++size_;
@@ -292,6 +285,7 @@ public:
     //Удаляет элемент, следующий за pos.
     //Возвращает итератор на элемент, следующий за удалённым
     Iterator EraseAfter(ConstIterator pos) noexcept {
+        assert(pos.node_ != nullptr);
         Node* n = pos.node_->next_node; // узел полсе узла pos
         pos.node_->next_node = n->next_node; // связываем список
         auto after_del = n->next_node;
@@ -349,7 +343,7 @@ bool operator<(const SingleLinkedList<Type>& lhs, const SingleLinkedList<Type>& 
 
 template <typename Type>
 bool operator<=(const SingleLinkedList<Type>& lhs, const SingleLinkedList<Type>& rhs) {
-    return (lhs < rhs) || (lhs == rhs);
+    return !(rhs < lhs);
 }
 
 template <typename Type>
@@ -359,5 +353,5 @@ bool operator>(const SingleLinkedList<Type>& lhs, const SingleLinkedList<Type>& 
 
 template <typename Type>
 bool operator>=(const SingleLinkedList<Type>& lhs, const SingleLinkedList<Type>& rhs) {
-    return (rhs < lhs) || (lhs == rhs);
+    return !(lhs < rhs);
 }
